@@ -111,6 +111,13 @@ kv = '''
             pos_hint: {"center_x": 0.65, "y": 0.35}
             on_press:
                 root.SignUpCheck()
+                
+        MDTextButton:
+            text: ""
+            custom_color: 1, 1, 0, 1
+            pos_hint: {"center_x": 0.71, "y": 0.457}
+            on_press:
+                root.changeIconUP()
 
         MDTextButton:
             text: "Already a user? Sign In"
@@ -202,6 +209,13 @@ kv = '''
             font_size: 17
             pos_hint: {"center_x": 0.35, "y": 0.35}
             on_press: root.SignInCheck()
+            
+        MDTextButton:
+            text: ""
+            custom_color: 1, 1, 0, 1
+            pos_hint: {"center_x": 0.41, "y": 0.456}
+            on_press:
+                root.changeIcon()
             
         MDTextButton:
             text: "Don't have an account? Create one"
@@ -387,7 +401,7 @@ kv = '''
                                 line_width: 1.5
                                 size_hint_x: 1
                                 on_press: root.signOut()
-                            Widget:       
+                            Widget:      
 
 '''
 
@@ -463,6 +477,10 @@ class WindManager(ScreenManager):
 
         self.flt = FloatLayout()
         self.flt.input = MDTextField(hint_text="Enter amount",
+                                     required = True,
+                                     helper_text="Only Input Absolute Number not greater than 10Lakh",
+                                     max_text_length = 7,
+                                     helper_text_mode="on_focus",
                                      font_size=20,
                                      size_hint=(0.6, 0.6),
                                      on_text_validate = lambda dt: self.enteringMoney(),
@@ -482,22 +500,24 @@ class WindManager(ScreenManager):
         self.po.content = self.flt
 
     def enteringMoney(self):
-        global user
+        if self.flt.input.text is None or self.flt.input.text == "":
+            pass
+        else:
+            global user
 
-        sql = "UPDATE userInfo SET amount = %s, modifiedAmount = %s WHERE username = %s"
-        val = (self.flt.input.text, self.flt.input.text, str(user))
-        mycursor.execute(sql, val)
-        mybd.commit()
-        self.displayAmount()
-        self.po.dismiss()
-        self.current = "Home Page"
+            sql = "UPDATE userInfo SET amount = %s, modifiedAmount = %s WHERE username = %s"
+            val = (self.flt.input.text, self.flt.input.text, str(user))
+            mycursor.execute(sql, val)
+            mybd.commit()
+            self.displayAmount()
+            self.po.dismiss()
+            self.current = "Home Page"
 
     def add(self):
         self.Addpo = Popup()
         self.Addpo.title = "Addition of Money"
         self.Addpo.size_hint = 0.4, 0.4
         self.Addpo.title_align = "center"
-        self.Addpo.auto_dismiss = False
         self.Addpo.title_size = 20
         self.Addpo.open()
         self.Addpo.background_color = (45/255, 68/255, 71/255, 1)
@@ -505,8 +525,10 @@ class WindManager(ScreenManager):
 
         self.AddFlt = FloatLayout()
         self.AddFlt.input = MDTextField(hint_text="Enter here",
-                                        helper_text = "Only Input Absolute Number",
+                                        required=True,
+                                        helper_text = "Only Input Absolute Number not greater than 10Lakh",
                                         helper_text_mode = "on_focus",
+                                        max_text_length=7,
                                         font_size=20,
                                         size_hint=(0.6, 0.6),
                                         pos_hint={"x": 0.2, "y": 0.6})
@@ -529,7 +551,6 @@ class WindManager(ScreenManager):
         self.Subpo.title = "Subtraction of Money"
         self.Subpo.size_hint = 0.4, 0.4
         self.Subpo.title_align = "center"
-        self.Subpo.auto_dismiss = False
         self.Subpo.title_size = 20
         self.Subpo.open()
         self.Subpo.background_color = (45 / 255, 68 / 255, 71 / 255, 1)
@@ -537,8 +558,10 @@ class WindManager(ScreenManager):
 
         self.SubFlt = FloatLayout()
         self.SubFlt.input = MDTextField(hint_text="Enter here",
-                                        helper_text = "Only Input Absolute Number",
+                                        required = True,
+                                        helper_text = "Only Input Absolute Number not greater than 10Lakh",
                                         helper_text_mode = "on_focus",
+                                        max_text_length=7,
                                         font_size=20,
                                         size_hint=(0.6, 0.6),
                                         pos_hint={"x": 0.2, "y": 0.6})
@@ -557,26 +580,34 @@ class WindManager(ScreenManager):
         self.Subpo.content = self.SubFlt
 
     def adding(self):
-        global user
-        mycursor.execute("SELECT modifiedAmount FROM userInfo WHERE username = %s", (user, ))
-        for i in mycursor:
-            self.varI = str(i)[1: -2]
-        updateamount = int(self.varI) + int(self.AddFlt.input.text)
-        mycursor.execute("UPDATE userInfo SET modifiedAmount = %s WHERE username = %s", (str(updateamount), user))
-        mybd.commit()
-        self.Addpo.dismiss()
-        self.ids.modifyAmount.text = "₹" + str(updateamount)
+        if self.AddFlt.input.text is None or self.AddFlt.input.text == "":
+            self.AddFlt.input.helper_text = "Do not leave it blank"
+            self.AddFlt.input.helper_text_mode = "persistent"
+        else:
+            global user
+            mycursor.execute("SELECT modifiedAmount FROM userInfo WHERE username = %s", (user, ))
+            for i in mycursor:
+                self.varI = str(i)[1: -2]
+            updateamount = int(self.varI) + int(self.AddFlt.input.text)
+            mycursor.execute("UPDATE userInfo SET modifiedAmount = %s WHERE username = %s", (str(updateamount), user))
+            mybd.commit()
+            self.Addpo.dismiss()
+            self.ids.modifyAmount.text = "₹" + str(updateamount)
 
     def subtracting(self):
-        global user
-        mycursor.execute("SELECT modifiedAmount FROM userInfo WHERE username = %s", (user,))
-        for i in mycursor:
-            self.varI = str(i)[1: -2]
-        updateamount = int(self.varI) - int(self.SubFlt.input.text)
-        mycursor.execute("UPDATE userInfo SET modifiedAmount = %s WHERE username = %s", (str(updateamount), user))
-        mybd.commit()
-        self.Subpo.dismiss()
-        self.ids.modifyAmount.text = "₹" + str(updateamount)
+        if self.SubFlt.input.text is None or self.SubFlt.input.text == "":
+            self.SubFlt.input.helper_text = "Do not leave it blank"
+            self.SubFlt.input.helper_text_mode = "persistent"
+        else:
+            global user
+            mycursor.execute("SELECT modifiedAmount FROM userInfo WHERE username = %s", (user,))
+            for i in mycursor:
+                self.varI = str(i)[1: -2]
+            updateamount = int(self.varI) - int(self.SubFlt.input.text)
+            mycursor.execute("UPDATE userInfo SET modifiedAmount = %s WHERE username = %s", (str(updateamount), user))
+            mybd.commit()
+            self.Subpo.dismiss()
+            self.ids.modifyAmount.text = "₹" + str(updateamount)
 
     def account(self):
         global user
@@ -598,6 +629,24 @@ class WindManager(ScreenManager):
     def out(self):
         self.current = "Sign In"
         self.dialogOut.dismiss()
+    def changeIcon(self):
+        if self.ids.Inpassword.icon_right == "eye-off":
+            self.ids.Inpassword.icon_right = "eye"
+        else:
+            self.ids.Inpassword.icon_right = "eye-off"
+        if self.ids.Inpassword.password == True:
+            self.ids.Inpassword.password = False
+        else:
+            self.ids.Inpassword.password = True
+    def changeIconUP(self):
+        if self.ids.UPpass.icon_right == "eye-off":
+            self.ids.UPpass.icon_right = "eye"
+        else:
+            self.ids.UPpass.icon_right = "eye-off"
+        if self.ids.UPpass.password == True:
+            self.ids.UPpass.password = False
+        else:
+            self.ids.UPpass.password = True
 
     def help(self):
         self.HPpo = Popup()
