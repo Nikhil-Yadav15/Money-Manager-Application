@@ -80,6 +80,7 @@ kv = '''
             text: ""
             color_active: 255/255, 255/255, 255/255, 1
             normal_color: 215/255, 215/255, 215/255, 1
+            on_text_validate: root.SignUpCheck()
             icon_right_color: "black"
             hint_text_color: 0, 0, 0, 0.5
             hint_text: "Username"
@@ -94,6 +95,7 @@ kv = '''
             hint_text: "Password"
             icon_right: "eye-off"
             icon_right_color: "black"
+            on_text_validate: root.SignUpCheck()
             hint_text_color: 0, 0, 0, 0.5
             color_active: 255/255, 255/255, 255/255, 1
             normal_color: 215/255, 215/255, 215/255, 1
@@ -121,6 +123,8 @@ kv = '''
 
         MDTextButton:
             text: "Already a user? Sign In"
+            underline: True
+            italic: True
             custom_color: 0, 1, 0, 1
             pos_hint: {"center_x": 0.65, "y": 0.28}
             on_press: 
@@ -181,6 +185,7 @@ kv = '''
             normal_color: 225/255, 225/255, 225/255, 1
             hint_text: "Username"
             hint_text_color: 0, 0, 0, 0.5
+            on_text_validate: root.SignInCheck()
             icon_right: "account"
             icon_right_color: "black"
             size_hint_x: None
@@ -193,6 +198,7 @@ kv = '''
             hint_text: "Password"
             hint_text_color: 0, 0, 0, 0.5
             icon_right: "eye-off"
+            on_text_validate: root.SignInCheck()
             icon_right_color: "black" 
             color_active: 255/255, 255/255, 255/255, 1
             normal_color: 215/255, 215/255, 215/255, 1
@@ -219,6 +225,8 @@ kv = '''
             
         MDTextButton:
             text: "Don't have an account? Create one"
+            underline: True
+            italic: True
             custom_color: 0, 1, 0, 1
             pos_hint: {"center_x": 0.35, "y": 0.28}
             on_press: 
@@ -411,7 +419,7 @@ class WindManager(ScreenManager):
     def SignInCheck(self):
         mycursor.execute("SELECT username, password FROM userInfo")
         for i, z in mycursor:
-            if i == self.ids.Inusername.text.lower() and z == str(self.ids.Inpassword.text.lower()):
+            if i == self.ids.Inusername.text and z == str(self.ids.Inpassword.text):
                 global user
                 user = i
                 self.current = "Home Page"
@@ -428,7 +436,7 @@ class WindManager(ScreenManager):
         self.inputBool = 1
         mycursor.execute("SELECT username FROM userInfo")
         for u in mycursor:
-            if self.ids.UPusername.text.lower() == str(u)[2: -3]:
+            if self.ids.UPusername.text == str(u)[2: -3]:
 
                 self.inputBool = 0
                 self.informUP()
@@ -439,7 +447,7 @@ class WindManager(ScreenManager):
         if self.inputBool:
 
             sql = "INSERT INTO userInfo (username, password) VALUES( %s, %s)"
-            val = (str(self.ids.UPusername.text.lower()), str(self.ids.UPpass.text.lower()))
+            val = (str(self.ids.UPusername.text), str(self.ids.UPpass.text))
             mycursor.execute(sql, val)
             mybd.commit()
 
